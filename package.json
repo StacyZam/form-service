@@ -1,0 +1,17 @@
+{
+  "name": "form-service",
+  "version": "1.0.0",
+  "description": "Сервис создания форм откликов и сбора заявок",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
