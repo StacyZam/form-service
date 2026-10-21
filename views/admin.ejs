@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Админ-панель | Конструктор форм</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <div class="max-w-5xl mx-auto py-10 px-4">
+    <header class="flex justify-between items-center mb-8 border-b pb-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Панель управления формами</h1>
+        <p class="text-sm text-slate-500">Создавайте формы для вакансий и мероприятий без разработчиков</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Конструктор -->
+      <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-semibold mb-4">Создать новую форму</h2>
+        <form action="/admin/forms" method="POST" id="form-builder">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Название формы *</label>
+            <input type="text" name="title" required placeholder="Стажировка Node.js" class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Описание для студента</label>
+            <textarea name="description" rows="2" placeholder="Заполните заявку..." class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-sm font-medium">Поля анкеты</label>
+              <button type="button" onclick="addField()" class="text-xs text-blue-600 hover:underline">+ Добавить вопрос</button>
+            </div>
+            <div id="fields-container" class="space-y-3">
+              <!-- Дефолтное поле 1 -->
+              <div class="field-item p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <input type="text" name="labels" value="Ваше ФИО" required class="w-full mb-2 px-2 py-1 text-xs border rounded bg-white" placeholder="Название вопроса">
+                <div class="flex gap-2">
+                  <select name="types" class="text-xs border rounded px-1 py-1 bg-white flex-1">
+                    <option value="text">Строка (текст)</option>
+                    <option value="email">Email</option>
+                    <option value="textarea">Большой текст</option>
+                  </select>
+                  <select name="required" class="text-xs border rounded px-1 py-1 bg-white">
+                    <option value="true">Обязательно</option>
+                    <option value="false">Опционально</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2 bg-blue-600 text-white font-medium rounded-lg text-sm hover:bg-blue-700 transition">Опубликовать форму</button>
+        </form>
+      </div>
+
+      <!-- Список форм -->
+      <div class="md:col-span-2">
+        <h2 class="text-lg font-semibold mb-4">Активные формы и статистика</h2>
+        <% if (forms.length === 0) { %>
+          <div class="bg-white p-8 rounded-xl border border-dashed border-slate-300 text-center text-slate-400">
+            Форм пока нет. Создайте первую форму слева.
+          </div>
+        <% } %>
+        <div class="space-y-4">
+          <% forms.forEach(f => { %>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-slate-800"><%= f.title %></h3>
+                <span class="text-xs text-slate-400"><%= new Date(f.created_at).toLocaleDateString() %></span>
+              </div>
+              <p class="text-sm text-slate-600 mb-4"><%= f.description || 'Без описания' %></p>
+
+              <div class="flex flex-wrap gap-4 items-center justify-between text-xs border-t pt-3">
+                <div class="flex gap-4">
+                  <span title="Уникальные заходы">Просмотры: <b><%= f.views_count %></b></span>
+                  <span>Отклики: <b><%= f.submissions_count %></b></span>
+                  <span class="text-green-600">Конверсия: <b><%= f.conversion %>%</b></span>
+                </div>
+                <div class="flex gap-3">
+                  <a href="/form/<%= f.id %>" target="_blank" class="text-blue-600 hover:underline">Открыть форму ↗</a>
+                  <a href="/admin/forms/<%= f.id %>/responses" class="bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded text-slate-700 font-medium">Смотреть ответы (<%= f.submissions_count %>)</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function addField() {
+      const container = document.getElementById('fields-container');
+      const div = document.createElement('div');
+      div.className = 'field-item p-3 bg-slate-50 rounded-lg border border-slate-200 relative';
+      div.innerHTML = `
+        <button type="button" onclick="this.parentElement.remove()" class="absolute top-1 right-2 text-slate-400 hover:text-red-500 text-xs">✕</button>
+        <input type="text" name="labels" required class="w-full mb-2 px-2 py-1 text-xs border rounded bg-white" placeholder="Название вопроса">
+        <div class="flex gap-2">
+          <select name="types" class="text-xs border rounded px-1 py-1 bg-white flex-1">
+            <option value="text">Строка (текст)</option>
+            <option value="email">Email</option>
+            <option value="textarea">Большой текст</option>
+          </select>
+          <select name="required" class="text-xs border rounded px-1 py-1 bg-white">
+            <option value="true">Обязательно</option>
+            <option value="false">Опционально</option>
+          </select>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+  </script>
+</body>
+</html>
